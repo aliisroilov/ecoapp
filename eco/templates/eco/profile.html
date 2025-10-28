@@ -1,0 +1,113 @@
+{% extends 'eco/base.html' %}
+
+{% block title %}My Profile - EcoApp{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Profile Card -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-2xl shadow-lg p-8 text-center" data-aos="fade-up">
+                {% if profile.photo %}
+                    <img src="{{ profile.photo.url }}" alt="{{ user.username }}" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover border-4 border-green-500">
+                {% else %}
+                    <div class="w-32 h-32 rounded-full mx-auto mb-4 bg-gradient-to-r from-green-400 to-green-600 flex items-center justify-center border-4 border-green-500">
+                        <span class="text-5xl text-white">{{ user.username.0|upper }}</span>
+                    </div>
+                {% endif %}
+                
+                <h2 class="text-2xl font-bold text-gray-900 mb-1">{{ user.get_full_name|default:user.username }}</h2>
+                <p class="text-gray-600 mb-4">@{{ user.username }}</p>
+                
+                {% if profile.location %}
+                    <p class="text-gray-600 mb-2">📍 {{ profile.location }}</p>
+                {% endif %}
+                {% if profile.age %}
+                    <p class="text-gray-600 mb-4">🎂 {{ profile.age }} years old</p>
+                {% endif %}
+                
+                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl p-6 mb-6">
+                    <p class="text-white text-sm mb-2">Coin Balance</p>
+                    <div class="flex items-center justify-center space-x-2">
+                        <span class="text-4xl">🪙</span>
+                        <span class="text-4xl font-bold text-white">{{ profile.coin_balance }}</span>
+                    </div>
+                </div>
+                
+                {% if profile.bio %}
+                    <div class="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+                        <p class="text-sm font-semibold text-gray-700 mb-2">About Me</p>
+                        <p class="text-gray-600">{{ profile.bio }}</p>
+                    </div>
+                {% endif %}
+                
+                <a href="{% url 'edit_profile' %}" class="block w-full gradient-green text-white py-3 rounded-lg font-semibold hover:opacity-90 transition">
+                    Edit Profile
+                </a>
+            </div>
+        </div>
+        
+        <!-- Activity Tabs -->
+        <div class="lg:col-span-2">
+            <!-- Recent Submissions -->
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8" data-aos="fade-up" data-aos-delay="100">
+                <h3 class="text-2xl font-bold mb-6 text-gray-900">Recent Submissions</h3>
+                {% if recent_submissions %}
+                    <div class="space-y-4">
+                        {% for submission in recent_submissions %}
+                            <div class="border-l-4 
+                                {% if submission.status == 'approved' %}border-green-500 bg-green-50
+                                {% elif submission.status == 'rejected' %}border-red-500 bg-red-50
+                                {% else %}border-yellow-500 bg-yellow-50{% endif %} 
+                                p-4 rounded-r-lg">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <h4 class="font-bold text-gray-900">{{ submission.task.title }}</h4>
+                                        <p class="text-sm text-gray-600 mt-1">{{ submission.created_at|date:"M d, Y" }}</p>
+                                    </div>
+                                    <span class="px-3 py-1 rounded-full text-sm font-semibold
+                                        {% if submission.status == 'approved' %}bg-green-200 text-green-800
+                                        {% elif submission.status == 'rejected' %}bg-red-200 text-red-800
+                                        {% else %}bg-yellow-200 text-yellow-800{% endif %}">
+                                        {{ submission.get_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-600 text-center py-8">No submissions yet. Start completing tasks!</p>
+                {% endif %}
+            </div>
+            
+            <!-- Coin Transaction History -->
+            <div class="bg-white rounded-2xl shadow-lg p-8" data-aos="fade-up" data-aos-delay="200">
+                <h3 class="text-2xl font-bold mb-6 text-gray-900">Coin History</h3>
+                {% if recent_transactions %}
+                    <div class="space-y-3">
+                        {% for transaction in recent_transactions %}
+                            <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-2xl">
+                                        {% if transaction.transaction_type == 'earn' %}💰{% else %}🛍️{% endif %}
+                                    </span>
+                                    <div>
+                                        <p class="font-semibold text-gray-900">{{ transaction.description }}</p>
+                                        <p class="text-sm text-gray-600">{{ transaction.created_at|date:"M d, Y - H:i" }}</p>
+                                    </div>
+                                </div>
+                                <span class="text-lg font-bold 
+                                    {% if transaction.transaction_type == 'earn' %}text-green-600{% else %}text-red-600{% endif %}">
+                                    {% if transaction.transaction_type == 'earn' %}+{% else %}-{% endif %}{{ transaction.amount }}
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-600 text-center py-8">No transactions yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

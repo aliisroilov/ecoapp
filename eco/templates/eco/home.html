@@ -1,0 +1,132 @@
+{% extends 'eco/base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="gradient-green text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-5xl font-bold mb-6" data-aos="fade-up">Welcome to EcoApp 🌍</h1>
+        <p class="text-xl text-green-100 mb-8 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="100">
+            Complete eco-friendly tasks, earn coins, and redeem awesome rewards while making the planet better!
+        </p>
+        {% if not user.is_authenticated %}
+            <div class="space-x-4" data-aos="fade-up" data-aos-delay="200">
+                <a href="{% url 'signup' %}" class="bg-white text-green-600 hover:bg-green-50 px-8 py-3 rounded-full text-lg font-semibold transition inline-block">Get Started</a>
+                <a href="{% url 'tasks' %}" class="bg-transparent border-2 border-white text-white hover:bg-white hover:text-green-600 px-8 py-3 rounded-full text-lg font-semibold transition inline-block">Browse Tasks</a>
+            </div>
+        {% else %}
+            <div class="space-x-4" data-aos="fade-up" data-aos-delay="200">
+                <a href="{% url 'tasks' %}" class="bg-white text-green-600 hover:bg-green-50 px-8 py-3 rounded-full text-lg font-semibold transition inline-block">View Tasks</a>
+                <a href="{% url 'store' %}" class="bg-transparent border-2 border-white text-white hover:bg-white hover:text-green-600 px-8 py-3 rounded-full text-lg font-semibold transition inline-block">Visit Store</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-white rounded-xl shadow-lg p-8 text-center hover-scale" data-aos="fade-up">
+            <div class="text-5xl mb-4">🌱</div>
+            <h3 class="text-3xl font-bold text-green-600 mb-2">{{ total_tasks }}</h3>
+            <p class="text-gray-600">Active Eco Tasks</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-8 text-center hover-scale" data-aos="fade-up" data-aos-delay="100">
+            <div class="text-5xl mb-4">👥</div>
+            <h3 class="text-3xl font-bold text-green-600 mb-2">{{ total_users }}</h3>
+            <p class="text-gray-600">Active Users</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-8 text-center hover-scale" data-aos="fade-up" data-aos-delay="200">
+            <div class="text-5xl mb-4">✅</div>
+            <h3 class="text-3xl font-bold text-green-600 mb-2">{{ total_submissions }}</h3>
+            <p class="text-gray-600">Tasks Completed</p>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Tasks Section -->
+{% if featured_tasks %}
+<div class="bg-gray-100 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-4xl font-bold text-center mb-12 text-gray-800" data-aos="fade-up">Featured Eco Tasks</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {% for task in featured_tasks %}
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover-scale" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1|multiply:100 }}">
+                    {% if task.example_photo %}
+                        <img src="{{ task.example_photo.url }}" alt="{{ task.title }}" class="w-full h-48 object-cover">
+                    {% else %}
+                        <div class="w-full h-48 bg-gradient-to-r from-green-400 to-green-600 flex items-center justify-center">
+                            <span class="text-6xl">🌿</span>
+                        </div>
+                    {% endif %}
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 text-gray-800">{{ task.title }}</h3>
+                        <p class="text-gray-600 mb-4">{{ task.description|truncatewords:15 }}</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-yellow-500 text-2xl">🪙</span>
+                                <span class="text-xl font-bold text-green-600">{{ task.coin_reward }}</span>
+                            </div>
+                            <a href="{% url 'task_detail' task.id %}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition">View Task</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-12">
+            <a href="{% url 'tasks' %}" class="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition">View All Tasks</a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- How It Works Section -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <h2 class="text-4xl font-bold text-center mb-12 text-gray-800" data-aos="fade-up">How It Works</h2>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div class="text-center" data-aos="fade-up">
+            <div class="bg-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                <span class="text-3xl">1️⃣</span>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Sign Up</h3>
+            <p class="text-gray-600">Create your free account and join the eco community</p>
+        </div>
+        <div class="text-center" data-aos="fade-up" data-aos-delay="100">
+            <div class="bg-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                <span class="text-3xl">2️⃣</span>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Complete Tasks</h3>
+            <p class="text-gray-600">Choose eco-friendly tasks and complete them</p>
+        </div>
+        <div class="text-center" data-aos="fade-up" data-aos-delay="200">
+            <div class="bg-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                <span class="text-3xl">3️⃣</span>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Earn Coins</h3>
+            <p class="text-gray-600">Get rewarded with coins for your submissions</p>
+        </div>
+        <div class="text-center" data-aos="fade-up" data-aos-delay="300">
+            <div class="bg-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                <span class="text-3xl">4️⃣</span>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Redeem Rewards</h3>
+            <p class="text-gray-600">Use your coins to get awesome merchandise</p>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+{% if not user.is_authenticated %}
+<div class="gradient-green text-white py-16">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-4xl font-bold mb-6" data-aos="fade-up">Ready to Make a Difference?</h2>
+        <p class="text-xl text-green-100 mb-8" data-aos="fade-up" data-aos-delay="100">
+            Join thousands of users making the planet better while earning rewards!
+        </p>
+        <a href="{% url 'signup' %}" class="inline-block bg-white text-green-600 hover:bg-green-50 px-8 py-4 rounded-full text-lg font-semibold transition" data-aos="fade-up" data-aos-delay="200">
+            Join EcoApp Today
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

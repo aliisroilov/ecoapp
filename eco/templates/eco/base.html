@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EcoApp - Save the Planet, Earn Rewards{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <style>
+        .gradient-green {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navbar -->
+    <nav class="gradient-green shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{% url 'home' %}" class="flex items-center">
+                        <span class="text-2xl font-bold text-white">🌱 EcoApp</span>
+                    </a>
+                    <div class="hidden md:ml-10 md:flex md:space-x-8">
+                        <a href="{% url 'home' %}" class="text-white hover:text-green-100 px-3 py-2 rounded-md text-sm font-medium transition">Home</a>
+                        <a href="{% url 'tasks' %}" class="text-white hover:text-green-100 px-3 py-2 rounded-md text-sm font-medium transition">Tasks</a>
+                        <a href="{% url 'store' %}" class="text-white hover:text-green-100 px-3 py-2 rounded-md text-sm font-medium transition">Store</a>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'orders' %}" class="text-white hover:text-green-100 px-3 py-2 rounded-md text-sm font-medium transition">My Orders</a>
+                            {% if user.is_staff %}
+                                <a href="{% url 'moderation_dashboard' %}" class="text-white hover:text-green-100 px-3 py-2 rounded-md text-sm font-medium transition">Moderation</a>
+                                <a href="{% url 'admin_dashboard' %}" class="text-white hover:text-green-100 px-3 py-2 rounded-md text-sm font-medium transition">Admin</a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    {% if user.is_authenticated %}
+                        <div class="flex items-center bg-white bg-opacity-20 rounded-full px-4 py-2">
+                            <span class="text-yellow-300 mr-2">🪙</span>
+                            <span class="text-white font-bold">{{ user.profile.coin_balance }}</span>
+                        </div>
+                        <a href="{% url 'profile' %}" class="text-white hover:text-green-100 px-3 py-2 rounded-md text-sm font-medium transition">Profile</a>
+                        <a href="{% url 'logout' %}" class="bg-white text-green-600 hover:bg-green-50 px-4 py-2 rounded-md text-sm font-medium transition">Logout</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="text-white hover:text-green-100 px-3 py-2 rounded-md text-sm font-medium transition">Login</a>
+                        <a href="{% url 'signup' %}" class="bg-white text-green-600 hover:bg-green-50 px-4 py-2 rounded-md text-sm font-medium transition">Sign Up</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Notifications Banner -->
+    {% if user.is_authenticated and unread_notifications %}
+        <div class="bg-blue-50 border-b border-blue-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+                <div class="flex items-start space-x-3">
+                    <span class="text-blue-500 text-xl">🔔</span>
+                    <div class="flex-1">
+                        <h4 class="text-sm font-semibold text-blue-900">You have {{ unread_notifications|length }} new notification(s)</h4>
+                        {% for notification in unread_notifications %}
+                            <div class="mt-2 text-sm text-blue-800">
+                                <a href="{% url 'mark_notification_read' notification.id %}" class="hover:underline">
+                                    {{ notification.message }}
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            {% for message in messages %}
+                <div class="{% if message.tags == 'error' %}bg-red-100 border-red-400 text-red-700{% elif message.tags == 'success' %}bg-green-100 border-green-400 text-green-700{% else %}bg-blue-100 border-blue-400 text-blue-700{% endif %} border px-4 py-3 rounded relative mb-4" role="alert">
+                    <span class="block sm:inline">{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="min-h-screen">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="gradient-green text-white mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">🌱 EcoApp</h3>
+                    <p class="text-green-100">Making the world greener, one task at a time.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'tasks' %}" class="text-green-100 hover:text-white transition">Browse Tasks</a></li>
+                        <li><a href="{% url 'store' %}" class="text-green-100 hover:text-white transition">Merchandise Store</a></li>
+                        <li><a href="{% url 'home' %}" class="text-green-100 hover:text-white transition">About Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Contact</h4>
+                    <p class="text-green-100">Email: info@ecoapp.com</p>
+                    <p class="text-green-100">Join us in making a difference!</p>
+                </div>
+            </div>
+            <div class="border-t border-green-400 mt-8 pt-6 text-center text-green-100">
+                <p>&copy; 2025 EcoApp. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+    </script>
+</body>
+</html>
