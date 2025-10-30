@@ -3,42 +3,54 @@
 {% block title %}Sign Up - EcoApp{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 to-green-100">
-    <div class="max-w-md w-full" data-aos="fade-up">
-        <div class="bg-white rounded-2xl shadow-2xl p-8">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-gray-900">Join EcoApp 🌱</h2>
-                <p class="mt-2 text-gray-600">Start making a difference today</p>
-            </div>
-            
-            <form method="post" class="space-y-4">
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full">
+        <div class="gradient-primary rounded-3xl p-8 mb-8 text-center shadow-2xl">
+            <h2 class="text-3xl font-bold text-white mb-2">Join EcoApp</h2>
+            <p class="text-white opacity-90">Start earning rewards for saving the planet</p>
+        </div>
+
+        <div class="card p-8">
+            <form method="post" class="space-y-6">
                 {% csrf_token %}
                 
-                {% for field in form %}
-                    <div>
-                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                            {{ field.label }}
-                        </label>
-                        {{ field }}
-                        {% if field.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ field.errors.0 }}</p>
-                        {% endif %}
-                        {% if field.help_text %}
-                            <p class="mt-1 text-xs text-gray-500">{{ field.help_text }}</p>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-                
-                <button type="submit" class="w-full gradient-green text-white py-3 rounded-lg font-semibold hover:opacity-90 transition transform hover:scale-105 mt-6">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                    <input type="text" name="username" id="username" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+                           placeholder="Choose a username">
+                </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" name="email" id="email" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+                           placeholder="your@email.com">
+                </div>
+
+                <div>
+                    <label for="password1" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" name="password1" id="password1" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+                           placeholder="Create a strong password">
+                </div>
+
+                <div>
+                    <label for="password2" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                    <input type="password" name="password2" id="password2" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+                           placeholder="Confirm your password">
+                </div>
+
+                <button type="submit" class="btn-primary w-full text-center">
                     Create Account
                 </button>
             </form>
-            
-            <div class="mt-6 text-center">
-                <p class="text-gray-600">Already have an account? 
-                    <a href="{% url 'login' %}" class="text-green-600 font-semibold hover:text-green-700">Login</a>
-                </p>
-            </div>
+
+            <p class="mt-6 text-center text-gray-600">
+                Already have an account? 
+                <a href="{% url 'login' %}" class="text-green-600 font-semibold hover:text-green-700">Login</a>
+            </p>
         </div>
     </div>
 </div>

@@ -1,63 +1,275 @@
 {% extends 'eco/base.html' %}
-{% load custom_filters %}
-{% block title %}Eco Tasks - EcoApp{% endblock %}
+
+{% block title %}Tasks - EcoApp{% endblock %}
 
 {% block content %}
-<div class="gradient-green text-white py-16">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl font-bold mb-4" data-aos="fade-up">Eco Tasks 🌍</h1>
-        <p class="text-xl text-green-100" data-aos="fade-up" data-aos-delay="100">
-            Complete eco-friendly tasks and earn coins!
+<div class="space-y-8">
+    <!-- Page Header -->
+    <div class="gradient-primary rounded-3xl p-8 md:p-12 shadow-2xl">
+        <h1 class="text-3xl md:text-5xl font-bold text-white mb-4">Available Tasks</h1>
+        <p class="text-lg md:text-xl text-white opacity-90">Complete eco-friendly tasks and earn coin rewards!</p>
+    </div>
+
+    <!-- Filters and Stats Bar -->
+    <div class="card p-6">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <!-- Filter Form -->
+            <form method="get" class="flex flex-wrap gap-3 items-end flex-1">
+                <!-- Category Filter -->
+                <div class="flex-1 min-w-[200px]">
+                    <label for="category" class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                    <select name="category" id="category" onchange="this.form.submit()"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800">
+                        <option value="">All Categories</option>
+                        <option value="recycling" {% if request.GET.category == 'recycling' %}selected{% endif %}>♻️ Recycling</option>
+                        <option value="planting" {% if request.GET.category == 'planting' %}selected{% endif %}>🌱 Planting</option>
+                        <option value="cleanup" {% if request.GET.category == 'cleanup' %}selected{% endif %}>🧹 Cleanup</option>
+                        <option value="energy" {% if request.GET.category == 'energy' %}selected{% endif %}>⚡ Energy Saving</option>
+                        <option value="water" {% if request.GET.category == 'water' %}selected{% endif %}>💧 Water Conservation</option>
+                        <option value="transport" {% if request.GET.category == 'transport' %}selected{% endif %}>🚴 Green Transport</option>
+                        <option value="education" {% if request.GET.category == 'education' %}selected{% endif %}>📚 Education</option>
+                        <option value="other" {% if request.GET.category == 'other' %}selected{% endif %}>🌍 Other</option>
+                    </select>
+                </div>
+
+                <!-- Sort By -->
+                <div class="flex-1 min-w-[200px]">
+                    <label for="sort" class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                    <select name="sort" id="sort" onchange="this.form.submit()"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800">
+                        <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>Newest First</option>
+                        <option value="coins_high" {% if request.GET.sort == 'coins_high' %}selected{% endif %}>Highest Coins</option>
+                        <option value="coins_low" {% if request.GET.sort == 'coins_low' %}selected{% endif %}>Lowest Coins</option>
+                        <option value="popular" {% if request.GET.sort == 'popular' %}selected{% endif %}>Most Popular</option>
+                    </select>
+                </div>
+
+                <!-- Clear Filters -->
+                {% if request.GET.category or request.GET.sort %}
+                <div class="flex items-end">
+                    <a href="{% url 'tasks' %}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-semibold transition">
+                        Clear Filters
+                    </a>
+                </div>
+                {% endif %}
+            </form>
+
+            <!-- Quick Stats -->
+            <div class="flex gap-4 flex-wrap">
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-green-600">{{ total_tasks|default:0 }}</p>
+                    <p class="text-sm text-gray-600">Total Tasks</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-blue-600">{{ your_completed|default:0 }}</p>
+                    <p class="text-sm text-gray-600">You Completed</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks Grid -->
+    <div>
+        {% if request.GET.category or request.GET.sort %}
+        <p class="text-gray-600 mb-4">
+            Showing 
+            {% if request.GET.category %}
+                <span class="font-semibold">{{ request.GET.category }}</span> tasks
+            {% else %}
+                all tasks
+            {% endif %}
+            {% if request.GET.sort %}
+                sorted by <span class="font-semibold">
+                    {% if request.GET.sort == 'newest' %}Newest First
+                    {% elif request.GET.sort == 'coins_high' %}Highest Coins
+                    {% elif request.GET.sort == 'coins_low' %}Lowest Coins
+                    {% elif request.GET.sort == 'popular' %}Most Popular
+                    {% else %}{{ request.GET.sort }}{% endif %}
+                </span>
+            {% endif %}
         </p>
+        {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {% for task in tasks %}
+            <div class="card overflow-hidden hover:shadow-2xl transition-all duration-300 fade-in group">
+                <!-- Task Image/Icon -->
+                {% if task.image %}
+                <div class="h-48 overflow-hidden">
+                    <img src="{{ task.image.url }}" alt="{{ task.title }}" 
+                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                </div>
+                {% else %}
+                <div class="h-48 gradient-primary flex items-center justify-center">
+                    <svg class="w-20 h-20 text-white opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                {% endif %}
+
+                <!-- Task Content -->
+                <div class="p-6">
+                    <!-- Category Badge & Coins -->
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full">
+                            {{ task.category|default:"General"|title }}
+                        </span>
+                        <div class="flex items-center space-x-1">
+                            <svg class="w-5 h-5 text-yellow-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/>
+                            </svg>
+                            <span class="text-lg font-bold text-gray-800">{{ task.reward_coins|default:task.coin_reward|default:0 }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Task Title -->
+                    <h3 class="text-xl font-bold text-gray-800 mb-2 line-clamp-2">{{ task.title }}</h3>
+
+                    <!-- Task Description -->
+                    <p class="text-gray-600 mb-4 line-clamp-3">{{ task.description|truncatewords:20 }}</p>
+
+                    <!-- Task Meta -->
+                    <div class="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                        <!-- Difficulty -->
+                        {% if task.difficulty %}
+                        <div class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <span>{{ task.difficulty|title }}</span>
+                        </div>
+                        {% endif %}
+
+                        <!-- Submissions Count -->
+                        <div class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                            </svg>
+                            <span>{{ task.submission_count|default:0 }} done</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <a href="{% url 'task_detail' task.id %}" 
+                       class="block w-full text-center bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-105">
+                        View Task Details →
+                    </a>
+                </div>
+
+                <!-- Your Status Badge (if you've submitted) -->
+                {% if task.your_submission %}
+                <div class="absolute top-4 right-4">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold shadow-lg
+                        {% if task.your_submission.status == 'approved' %}bg-green-500 text-white
+                        {% elif task.your_submission.status == 'rejected' %}bg-red-500 text-white
+                        {% else %}bg-yellow-500 text-white{% endif %}">
+                        {% if task.your_submission.status == 'approved' %}✓ Completed
+                        {% elif task.your_submission.status == 'rejected' %}✗ Rejected
+                        {% else %}⏳ Pending{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <!-- No Tasks Found -->
+            <div class="col-span-full text-center py-16">
+                <svg class="w-24 h-24 text-gray-400 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">No Tasks Found</h3>
+                <p class="text-gray-600 mb-6">
+                    {% if request.GET.category or request.GET.sort %}
+                        Try adjusting your filters to see more tasks.
+                    {% else %}
+                        Check back soon for new eco-friendly tasks!
+                    {% endif %}
+                </p>
+                {% if request.GET.category or request.GET.sort %}
+                <a href="{% url 'tasks' %}" class="btn-primary inline-block">
+                    View All Tasks
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if tasks.has_other_pages %}
+        <div class="flex justify-center items-center gap-2 mt-8">
+            {% if tasks.has_previous %}
+            <a href="?page=1{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
+               class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition">
+                First
+            </a>
+            <a href="?page={{ tasks.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
+               class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition">
+                Previous
+            </a>
+            {% endif %}
+
+            <span class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium">
+                Page {{ tasks.number }} of {{ tasks.paginator.num_pages }}
+            </span>
+
+            {% if tasks.has_next %}
+            <a href="?page={{ tasks.next_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
+               class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition">
+                Next
+            </a>
+            <a href="?page={{ tasks.paginator.num_pages }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
+               class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition">
+                Last
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Call to Action -->
+    <div class="gradient-primary rounded-3xl p-8 md:p-12 text-center shadow-2xl">
+        <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">Can't Find What You're Looking For?</h2>
+        <p class="text-white opacity-90 mb-6">New tasks are added regularly. Check back soon or suggest a task!</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'profile' %}" class="bg-white text-green-600 hover:bg-green-50 px-8 py-3 rounded-full font-bold transition">
+                View Your Progress
+            </a>
+            <a href="{% url 'store' %}" class="bg-yellow-400 text-green-900 hover:bg-yellow-300 px-8 py-3 rounded-full font-bold transition">
+                Visit Store
+            </a>
+        </div>
     </div>
 </div>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    {% if tasks %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {% for task in tasks %}
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover-scale" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1|multiply:50 }}">
-                    {% if task.example_photo %}
-                        <img src="{{ task.example_photo.url }}" alt="{{ task.title }}" class="w-full h-48 object-cover">
-                    {% else %}
-                        <div class="w-full h-48 bg-gradient-to-r from-green-400 to-green-600 flex items-center justify-center">
-                            <span class="text-6xl">🌿</span>
-                        </div>
-                    {% endif %}
-                    
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold mb-2 text-gray-800">{{ task.title }}</h3>
-                        <p class="text-gray-600 mb-4">{{ task.description|truncatewords:20 }}</p>
-                        
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center space-x-2">
-                                <span class="text-yellow-500 text-2xl">🪙</span>
-                                <span class="text-xl font-bold text-green-600">{{ task.coin_reward }}</span>
-                            </div>
-                            {% if task.deadline %}
-                                <span class="text-sm text-gray-500">📅 {{ task.deadline|date:"M d, Y" }}</span>
-                            {% endif %}
-                        </div>
-                        
-                        {% if task.id in submitted_task_ids %}
-                            <button class="w-full bg-gray-400 text-white py-2 rounded-lg font-semibold cursor-not-allowed">
-                                Already Submitted
-                            </button>
-                        {% else %}
-                            <a href="{% url 'task_detail' task.id %}" class="block w-full text-center bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold transition">
-                                View Details
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="text-center py-16">
-            <div class="text-6xl mb-4">🌱</div>
-            <h3 class="text-2xl font-bold text-gray-700 mb-2">No tasks available yet</h3>
-            <p class="text-gray-600">Check back soon for new eco-friendly tasks!</p>
-        </div>
-    {% endif %}
-</div>
+<style>
+    /* Line clamp utilities for text truncation */
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Smooth animations */
+    .fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
 {% endblock %}

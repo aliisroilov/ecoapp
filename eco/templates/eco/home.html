@@ -1,132 +1,134 @@
 {% extends 'eco/base.html' %}
-{% load custom_filters %}
+
+{% block title %}Home - EcoApp{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="gradient-green text-white py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-5xl font-bold mb-6" data-aos="fade-up">Welcome to EcoApp 🌍</h1>
-        <p class="text-xl text-green-100 mb-8 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="100">
-            Complete eco-friendly tasks, earn coins, and redeem awesome rewards while making the planet better!
-        </p>
-        {% if not user.is_authenticated %}
-            <div class="space-x-4" data-aos="fade-up" data-aos-delay="200">
-                <a href="{% url 'signup' %}" class="bg-white text-green-600 hover:bg-green-50 px-8 py-3 rounded-full text-lg font-semibold transition inline-block">Get Started</a>
-                <a href="{% url 'tasks' %}" class="bg-transparent border-2 border-white text-white hover:bg-white hover:text-green-600 px-8 py-3 rounded-full text-lg font-semibold transition inline-block">Browse Tasks</a>
-            </div>
-        {% else %}
-            <div class="space-x-4" data-aos="fade-up" data-aos-delay="200">
-                <a href="{% url 'tasks' %}" class="bg-white text-green-600 hover:bg-green-50 px-8 py-3 rounded-full text-lg font-semibold transition inline-block">View Tasks</a>
-                <a href="{% url 'store' %}" class="bg-transparent border-2 border-white text-white hover:bg-white hover:text-green-600 px-8 py-3 rounded-full text-lg font-semibold transition inline-block">Visit Store</a>
-            </div>
-        {% endif %}
-    </div>
-</div>
-
-<!-- Stats Section -->
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="bg-white rounded-xl shadow-lg p-8 text-center hover-scale" data-aos="fade-up">
-            <div class="text-5xl mb-4">🌱</div>
-            <h3 class="text-3xl font-bold text-green-600 mb-2">{{ total_tasks }}</h3>
-            <p class="text-gray-600">Active Eco Tasks</p>
-        </div>
-        <div class="bg-white rounded-xl shadow-lg p-8 text-center hover-scale" data-aos="fade-up" data-aos-delay="100">
-            <div class="text-5xl mb-4">👥</div>
-            <h3 class="text-3xl font-bold text-green-600 mb-2">{{ total_users }}</h3>
-            <p class="text-gray-600">Active Users</p>
-        </div>
-        <div class="bg-white rounded-xl shadow-lg p-8 text-center hover-scale" data-aos="fade-up" data-aos-delay="200">
-            <div class="text-5xl mb-4">✅</div>
-            <h3 class="text-3xl font-bold text-green-600 mb-2">{{ total_submissions }}</h3>
-            <p class="text-gray-600">Tasks Completed</p>
+<div class="space-y-8">
+    <!-- Hero Section -->
+    <div class="gradient-primary rounded-3xl p-8 md:p-12 shadow-2xl fade-in">
+        <div class="max-w-3xl">
+            <h1 class="text-3xl md:text-5xl font-bold mb-4 text-white">Welcome, {{ user.first_name|default:user.username }}!</h1>
+            <p class="text-lg md:text-xl text-white opacity-90 mb-6">Make a difference while earning rewards. Join the eco-revolution!</p>
+            <a href="{% url 'tasks' %}" class="btn-primary inline-block">View Tasks</a>
         </div>
     </div>
-</div>
 
-<!-- Featured Tasks Section -->
-{% if featured_tasks %}
-<div class="bg-gray-100 py-16">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-4xl font-bold text-center mb-12 text-gray-800" data-aos="fade-up">Featured Eco Tasks</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <!-- Coin Balance -->
+        <div class="gradient-accent rounded-2xl p-6 shadow-lg fade-in">
+            <div class="flex items-center justify-between mb-4">
+                <svg class="w-10 h-10 md:w-12 md:h-12 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/>
+                </svg>
+            </div>
+            <p class="text-white text-sm opacity-90 mb-1">Your Balance</p>
+            <h3 class="text-3xl md:text-4xl font-bold text-white">{{ user.profile.coin_balance|default:0 }}</h3>
+        </div>
+        
+        <!-- Tasks Completed -->
+        <div class="gradient-primary rounded-2xl p-6 shadow-lg fade-in">
+            <div class="flex items-center justify-between mb-4">
+                <svg class="w-10 h-10 md:w-12 md:h-12 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 3H14.82C14.4 1.84 13.3 1 12 1C10.7 1 9.6 1.84 9.18 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM12 3C12.55 3 13 3.45 13 4C13 4.55 12.55 5 12 5C11.45 5 11 4.55 11 4C11 3.45 11.45 3 12 3ZM10 17L6 13L7.41 11.59L10 14.17L16.59 7.58L18 9L10 17Z"/>
+                </svg>
+            </div>
+            <p class="text-white text-sm opacity-90 mb-1">Tasks Done</p>
+            <h3 class="text-3xl md:text-4xl font-bold text-white">{{ completed_tasks|default:0 }}</h3>
+        </div>
+        
+        <!-- Rank -->
+        <div class="gradient-blue rounded-2xl p-6 shadow-lg fade-in">
+            <div class="flex items-center justify-between mb-4">
+                <svg class="w-10 h-10 md:w-12 md:h-12 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                </svg>
+            </div>
+            <p class="text-white text-sm opacity-90 mb-1">Your Rank</p>
+            <h3 class="text-3xl md:text-4xl font-bold text-white">#{{ user_rank|default:'--' }}</h3>
+        </div>
+        
+        <!-- Impact -->
+        <div class="gradient-orange rounded-2xl p-6 shadow-lg fade-in">
+            <div class="flex items-center justify-between mb-4">
+                <svg class="w-10 h-10 md:w-12 md:h-12 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.66 7.93L12 2L6.34 7.93C3.22 11.05 3.22 16.05 6.34 19.17C7.9 20.73 9.95 21.51 12 21.51C14.05 21.51 16.1 20.73 17.66 19.17C20.78 16.05 20.78 11.05 17.66 7.93Z"/>
+                </svg>
+            </div>
+            <p class="text-white text-sm opacity-90 mb-1">CO2 Saved</p>
+            <h3 class="text-3xl md:text-4xl font-bold text-white">{{ total_impact|default:0 }}kg</h3>
+        </div>
+    </div>
+
+    <!-- Featured Tasks -->
+    <div>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2 sm:mb-0">Featured Tasks</h2>
+            <a href="{% url 'tasks' %}" class="text-green-600 hover:text-green-700 font-semibold text-sm md:text-base">View All →</a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {% for task in featured_tasks %}
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover-scale" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1|multiply:100 }}">
-                    {% if task.example_photo %}
-                        <img src="{{ task.example_photo.url }}" alt="{{ task.title }}" class="w-full h-48 object-cover">
-                    {% else %}
-                        <div class="w-full h-48 bg-gradient-to-r from-green-400 to-green-600 flex items-center justify-center">
-                            <span class="text-6xl">🌿</span>
-                        </div>
-                    {% endif %}
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold mb-2 text-gray-800">{{ task.title }}</h3>
-                        <p class="text-gray-600 mb-4">{{ task.description|truncatewords:15 }}</p>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-2">
-                                <span class="text-yellow-500 text-2xl">🪙</span>
-                                <span class="text-xl font-bold text-green-600">{{ task.coin_reward }}</span>
-                            </div>
-                            <a href="{% url 'task_detail' task.id %}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition">View Task</a>
-                        </div>
+            <div class="card p-6 fade-in">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full">{{ task.category|default:"General" }}</span>
+                    <div class="flex items-center space-x-1">
+                        <svg class="w-5 h-5 text-yellow-500" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/>
+                        </svg>
+                        <span class="text-gray-700 font-bold">{{ task.reward_coins|default:task.coin_reward|default:0 }}</span>
                     </div>
                 </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-3">{{ task.title }}</h3>
+                <p class="text-gray-600 mb-4">{{ task.description|truncatewords:15 }}</p>
+                <a href="{% url 'task_detail' task.id %}" class="text-green-600 hover:text-green-700 font-semibold text-sm">Start Task →</a>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-12">
+                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p class="text-gray-500 text-lg">No tasks available right now. Check back soon!</p>
+            </div>
             {% endfor %}
         </div>
-        <div class="text-center mt-12">
-            <a href="{% url 'tasks' %}" class="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition">View All Tasks</a>
-        </div>
     </div>
-</div>
-{% endif %}
 
-<!-- How It Works Section -->
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <h2 class="text-4xl font-bold text-center mb-12 text-gray-800" data-aos="fade-up">How It Works</h2>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <div class="text-center" data-aos="fade-up">
-            <div class="bg-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                <span class="text-3xl">1️⃣</span>
+    <!-- How It Works -->
+    <div class="card p-8 md:p-12">
+        <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 text-center">How It Works</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            <div class="text-center">
+                <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">1. Choose a Task</h3>
+                <p class="text-gray-600">Browse our eco-friendly tasks and pick one that interests you.</p>
             </div>
-            <h3 class="text-xl font-bold mb-2">Sign Up</h3>
-            <p class="text-gray-600">Create your free account and join the eco community</p>
-        </div>
-        <div class="text-center" data-aos="fade-up" data-aos-delay="100">
-            <div class="bg-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                <span class="text-3xl">2️⃣</span>
+            
+            <div class="text-center">
+                <div class="bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">2. Complete & Submit</h3>
+                <p class="text-gray-600">Do the task and upload proof of completion.</p>
             </div>
-            <h3 class="text-xl font-bold mb-2">Complete Tasks</h3>
-            <p class="text-gray-600">Choose eco-friendly tasks and complete them</p>
-        </div>
-        <div class="text-center" data-aos="fade-up" data-aos-delay="200">
-            <div class="bg-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                <span class="text-3xl">3️⃣</span>
+            
+            <div class="text-center">
+                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">3. Earn Rewards</h3>
+                <p class="text-gray-600">Get coins approved and redeem them in our store!</p>
             </div>
-            <h3 class="text-xl font-bold mb-2">Earn Coins</h3>
-            <p class="text-gray-600">Get rewarded with coins for your submissions</p>
-        </div>
-        <div class="text-center" data-aos="fade-up" data-aos-delay="300">
-            <div class="bg-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                <span class="text-3xl">4️⃣</span>
-            </div>
-            <h3 class="text-xl font-bold mb-2">Redeem Rewards</h3>
-            <p class="text-gray-600">Use your coins to get awesome merchandise</p>
         </div>
     </div>
 </div>
-
-<!-- Call to Action -->
-{% if not user.is_authenticated %}
-<div class="gradient-green text-white py-16">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-4xl font-bold mb-6" data-aos="fade-up">Ready to Make a Difference?</h2>
-        <p class="text-xl text-green-100 mb-8" data-aos="fade-up" data-aos-delay="100">
-            Join thousands of users making the planet better while earning rewards!
-        </p>
-        <a href="{% url 'signup' %}" class="inline-block bg-white text-green-600 hover:bg-green-50 px-8 py-4 rounded-full text-lg font-semibold transition" data-aos="fade-up" data-aos-delay="200">
-            Join EcoApp Today
-        </a>
-    </div>
-</div>
-{% endif %}
 {% endblock %}

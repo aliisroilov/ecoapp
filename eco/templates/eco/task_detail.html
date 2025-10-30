@@ -3,78 +3,253 @@
 {% block title %}{{ task.title }} - EcoApp{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="bg-white rounded-2xl shadow-2xl overflow-hidden" data-aos="fade-up">
-        {% if task.example_photo %}
-            <img src="{{ task.example_photo.url }}" alt="{{ task.title }}" class="w-full h-96 object-cover">
-        {% else %}
-            <div class="w-full h-96 bg-gradient-to-r from-green-400 to-green-600 flex items-center justify-center">
-                <span class="text-9xl">🌿</span>
-            </div>
-        {% endif %}
-        
-        <div class="p-8">
-            <div class="flex items-start justify-between mb-6">
-                <h1 class="text-3xl font-bold text-gray-900">{{ task.title }}</h1>
-                <div class="flex items-center space-x-2 bg-yellow-50 px-4 py-2 rounded-full">
-                    <span class="text-yellow-500 text-3xl">🪙</span>
-                    <span class="text-2xl font-bold text-green-600">{{ task.coin_reward }}</span>
-                </div>
-            </div>
-            
-            {% if task.deadline %}
-                <div class="mb-6 inline-block bg-blue-50 px-4 py-2 rounded-lg">
-                    <span class="text-blue-600 font-semibold">📅 Deadline: {{ task.deadline|date:"F d, Y" }}</span>
-                </div>
-            {% endif %}
-            
-            <div class="prose max-w-none mb-8">
-                <h2 class="text-xl font-semibold text-gray-800 mb-3">Description</h2>
-                <p class="text-gray-700 leading-relaxed whitespace-pre-line">{{ task.description }}</p>
-            </div>
-            
-            {% if user_submission %}
-                <div class="bg-gray-50 border-l-4 {% if user_submission.status == 'approved' %}border-green-500{% elif user_submission.status == 'rejected' %}border-red-500{% else %}border-yellow-500{% endif %} p-6 rounded-r-lg">
-                    <h3 class="text-lg font-bold mb-2 
-                        {% if user_submission.status == 'approved' %}text-green-700
-                        {% elif user_submission.status == 'rejected' %}text-red-700
-                        {% else %}text-yellow-700{% endif %}">
-                        Your Submission: {{ user_submission.get_status_display }}
-                    </h3>
-                    
-                    {% if user_submission.image %}
-                        <img src="{{ user_submission.image.url }}" alt="Submission" class="w-full max-w-md rounded-lg mb-4">
-                    {% endif %}
-                    
-                    <p class="text-gray-700 mb-2"><strong>Your notes:</strong> {{ user_submission.description }}</p>
-                    
-                    {% if user_submission.status == 'pending' %}
-                        <p class="text-yellow-700 font-semibold">⏳ Your submission is under review</p>
-                    {% elif user_submission.status == 'approved' %}
-                        <p class="text-green-700 font-semibold">✅ Approved! You earned {{ task.coin_reward }} coins!</p>
-                    {% elif user_submission.status == 'rejected' %}
-                        <p class="text-red-700 font-semibold">❌ Rejected</p>
-                        {% if user_submission.moderator_comment %}
-                            <p class="text-gray-700 mt-2"><strong>Moderator feedback:</strong> {{ user_submission.moderator_comment }}</p>
-                        {% endif %}
+<div class="space-y-8">
+    <!-- Back Button -->
+    <div>
+        <a href="{% url 'tasks' %}" class="inline-flex items-center text-green-600 hover:text-green-700 font-semibold">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Tasks
+        </a>
+    </div>
+
+    <!-- Task Header -->
+    <div class="gradient-primary rounded-3xl p-8 md:p-12 shadow-2xl">
+        <div class="flex flex-col md:flex-row justify-between items-start gap-6">
+            <div class="flex-1">
+                <div class="flex flex-wrap gap-3 mb-4">
+                    <span class="bg-white bg-opacity-20 backdrop-blur-sm text-white text-sm font-semibold px-4 py-2 rounded-full">
+                        {{ task.category|default:"General"|title }}
+                    </span>
+                    {% if task.difficulty %}
+                    <span class="bg-white bg-opacity-20 backdrop-blur-sm text-white text-sm font-semibold px-4 py-2 rounded-full">
+                        {{ task.difficulty|title }} Level
+                    </span>
                     {% endif %}
                 </div>
-            {% else %}
-                {% if user.is_authenticated %}
-                    <a href="{% url 'submit_task' task.id %}" class="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition transform hover:scale-105">
-                        Submit This Task
-                    </a>
-                {% else %}
-                    <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
-                        <p class="text-blue-700 font-semibold">Please <a href="{% url 'login' %}" class="underline">login</a> to submit this task.</p>
-                    </div>
-                {% endif %}
-            {% endif %}
+                <h1 class="text-3xl md:text-5xl font-bold text-white mb-4">{{ task.title }}</h1>
+                <p class="text-lg text-white opacity-90">{{ task.short_description|default:task.description|truncatewords:30 }}</p>
+            </div>
+            
+            <!-- Reward Badge -->
+            <div class="gradient-accent rounded-2xl p-6 text-center shadow-lg min-w-[150px]">
+                <p class="text-white text-sm opacity-90 mb-2">Reward</p>
+                <div class="flex items-center justify-center space-x-2">
+                    <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/>
+                    </svg>
+                    <span class="text-3xl font-bold text-white">{{ task.reward_coins|default:task.coin_reward|default:0 }}</span>
+                </div>
+            </div>
         </div>
     </div>
-    
-    <div class="mt-6">
-        <a href="{% url 'tasks' %}" class="text-green-600 hover:text-green-700 font-semibold">← Back to all tasks</a>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Task Details (Left Column) -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Task Image -->
+            {% if task.image %}
+            <div class="card overflow-hidden">
+                <img src="{{ task.image.url }}" alt="{{ task.title }}" class="w-full h-64 md:h-96 object-cover">
+            </div>
+            {% endif %}
+
+            <!-- Task Description -->
+            <div class="card p-6 md:p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Task Description</h2>
+                <div class="prose max-w-none text-gray-600">
+                    {{ task.description|linebreaks }}
+                </div>
+            </div>
+
+            <!-- Requirements -->
+            {% if task.requirements %}
+            <div class="card p-6 md:p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Requirements</h2>
+                <div class="prose max-w-none text-gray-600">
+                    {{ task.requirements|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- How to Submit -->
+            <div class="card p-6 md:p-8 bg-blue-50 border-l-4 border-blue-500">
+                <h3 class="text-xl font-bold text-gray-800 mb-3">📸 How to Submit</h3>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                    <li>Complete the task as described above</li>
+                    <li>Take clear photos or videos as proof</li>
+                    <li>Upload your proof using the submission form</li>
+                    <li>Wait for moderator approval (usually 24-48 hours)</li>
+                    <li>Earn your coins once approved!</li>
+                </ol>
+            </div>
+
+            <!-- Your Submission Status -->
+            {% if user_submission %}
+            <div class="card p-6 md:p-8 border-2
+                {% if user_submission.status == 'approved' %}border-green-500 bg-green-50
+                {% elif user_submission.status == 'rejected' %}border-red-500 bg-red-50
+                {% else %}border-yellow-500 bg-yellow-50{% endif %}">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0">
+                        {% if user_submission.status == 'approved' %}
+                        <svg class="w-12 h-12 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        {% elif user_submission.status == 'rejected' %}
+                        <svg class="w-12 h-12 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                        {% else %}
+                        <svg class="w-12 h-12 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                        </svg>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold 
+                            {% if user_submission.status == 'approved' %}text-green-800
+                            {% elif user_submission.status == 'rejected' %}text-red-800
+                            {% else %}text-yellow-800{% endif %} mb-2">
+                            {% if user_submission.status == 'approved' %}✓ Task Completed!
+                            {% elif user_submission.status == 'rejected' %}Task Rejected
+                            {% else %}⏳ Submission Under Review{% endif %}
+                        </h3>
+                        <p class="text-gray-700 mb-3">
+                            {% if user_submission.status == 'approved' %}
+                                Congratulations! Your submission was approved and you earned {{ task.reward_coins }} coins.
+                            {% elif user_submission.status == 'rejected' %}
+                                Your submission was rejected. Please read the feedback and try again.
+                            {% else %}
+                                Your submission is being reviewed by our moderators. You'll be notified once it's approved.
+                            {% endif %}
+                        </p>
+                        <p class="text-sm text-gray-600">
+                            <strong>Submitted:</strong> {{ user_submission.submitted_at|date:"M d, Y - g:i A" }}
+                        </p>
+                        {% if user_submission.feedback %}
+                        <div class="mt-3 p-3 bg-white rounded-lg border border-gray-300">
+                            <p class="text-sm font-semibold text-gray-700 mb-1">Moderator Feedback:</p>
+                            <p class="text-sm text-gray-600">{{ user_submission.feedback }}</p>
+                        </div>
+                        {% endif %}
+                        {% if user_submission.proof_image %}
+                        <div class="mt-3">
+                            <img src="{{ user_submission.proof_image.url }}" alt="Your submission" 
+                                 class="w-full max-w-md rounded-lg border border-gray-300">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar (Right Column) -->
+        <div class="space-y-6">
+            <!-- Submit Task Card -->
+            {% if not user_submission or user_submission.status == 'rejected' %}
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    {% if user_submission.status == 'rejected' %}Resubmit Task{% else %}Submit Task{% endif %}
+                </h3>
+                <form method="post" enctype="multipart/form-data" class="space-y-4">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label for="proof_image" class="block text-sm font-medium text-gray-700 mb-2">
+                            Upload Proof Photo *
+                        </label>
+                        <input type="file" name="proof_image" id="proof_image" accept="image/*" required
+                               class="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl focus:outline-none focus:border-green-500 text-gray-700">
+                        <p class="text-xs text-gray-500 mt-1">JPG, PNG or GIF (Max 5MB)</p>
+                    </div>
+
+                    <div>
+                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                            Additional Notes (Optional)
+                        </label>
+                        <textarea name="notes" id="notes" rows="4"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+                                  placeholder="Add any details about your submission..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary w-full">
+                        Submit Task
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- Task Stats -->
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Task Stats</h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Total Submissions</span>
+                        <span class="font-bold text-gray-800">{{ task.submission_count|default:0 }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Approved</span>
+                        <span class="font-bold text-green-600">{{ task.approved_count|default:0 }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Difficulty</span>
+                        <span class="font-bold text-gray-800">{{ task.difficulty|default:"Medium"|title }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Category</span>
+                        <span class="font-bold text-gray-800">{{ task.category|default:"General"|title }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Impact Info -->
+            {% if task.impact_description %}
+            <div class="gradient-primary rounded-2xl p-6 shadow-lg">
+                <h3 class="text-xl font-bold text-white mb-3">🌍 Environmental Impact</h3>
+                <p class="text-white opacity-90">{{ task.impact_description }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Share Task -->
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Share This Task</h3>
+                <p class="text-sm text-gray-600 mb-4">Help spread the word about this eco-friendly task!</p>
+                <div class="flex gap-2">
+                    <button onclick="shareTask()" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Share
+                    </button>
+                    <button onclick="copyLink()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Copy Link
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+function shareTask() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ task.title }}',
+            text: 'Check out this eco-friendly task on EcoApp!',
+            url: window.location.href
+        }).catch(err => console.log('Error sharing:', err));
+    } else {
+        copyLink();
+    }
+}
+
+function copyLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        alert('Link copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+    });
+}
+</script>
 {% endblock %}

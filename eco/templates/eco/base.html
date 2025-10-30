@@ -3,88 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}EcoApp - Save the Planet, Earn Rewards{% endblock %}</title>
+    <title>{% block title %}EcoApp - Green Rewards{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
     <style>
-        .gradient-green {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        /* Base Styles */
+        body {
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            min-height: 100vh;
+            color: #1F2937;
         }
-        .hover-scale {
-            transition: transform 0.3s ease;
+        
+        /* Gradient Classes with WHITE text */
+        .gradient-primary {
+            background: linear-gradient(135deg, #66BB6A 0%, #43A047 100%);
+            color: white !important;
         }
-        .hover-scale:hover {
+        
+        .gradient-primary * {
+            color: white !important;
+        }
+        
+        .gradient-accent {
+            background: linear-gradient(135deg, #FFD54F 0%, #FFA000 100%);
+            color: white !important;
+        }
+        
+        .gradient-accent * {
+            color: white !important;
+        }
+        
+        .gradient-blue {
+            background: linear-gradient(135deg, #42A5F5 0%, #1976D2 100%);
+            color: white !important;
+        }
+        
+        .gradient-blue * {
+            color: white !important;
+        }
+        
+        .gradient-orange {
+            background: linear-gradient(135deg, #FFA726 0%, #F57C00 100%);
+            color: white !important;
+        }
+        
+        .gradient-orange * {
+            color: white !important;
+        }
+        
+        /* Card Styles with DARK text */
+        .card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            color: #1F2937 !important;
+        }
+        
+        .card h1, .card h2, .card h3, .card h4, .card h5, .card h6 {
+            color: #1F2937 !important;
+        }
+        
+        .card p, .card span, .card div {
+            color: #6B7280 !important;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        /* Button Styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #66BB6A 0%, #43A047 100%);
+            color: white !important;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .btn-primary:hover {
             transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        /* Form Styles */
+        input, textarea, select {
+            color: #1F2937 !important;
+            background: white !important;
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: #9CA3AF !important;
+        }
+        
+        /* Mobile Menu Styles */
+        .mobile-menu {
+            display: none;
+        }
+        
+        .mobile-menu.active {
+            display: block;
+        }
+        
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 4px;
+        }
+        
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+        
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+            
+            .desktop-menu {
+                display: none !important;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Navbar -->
-    <nav class="gradient-green shadow-lg sticky top-0 z-50">
+<body>
+    <!-- Navigation -->
+    <nav class="gradient-primary shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
                 <div class="flex items-center">
-                    <a href="{% url 'home' %}" class="flex items-center">
-                        <span class="text-2xl font-bold text-white"> EcoApp</span>
+                    <a href="{% url 'home' %}" class="flex items-center space-x-2">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM17 10a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0117 10zM5 10a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 015 10zM13.536 13.536a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0zM8.586 6.414a.75.75 0 010 1.06L7.525 8.536a.75.75 0 01-1.06-1.06l1.06-1.061a.75.75 0 011.061 0zM15.95 4.05a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0zM6.414 13.475a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 01-1.06-1.06l1.06-1.061a.75.75 0 011.061 0z"/>
+                        </svg>
+                        <span class="text-white text-xl font-bold">EcoApp</span>
                     </a>
-                    <div class="hidden md:ml-10 md:flex md:space-x-8">
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="desktop-menu hidden md:flex items-center space-x-4">
+                    {% if user.is_authenticated %}
                         <a href="{% url 'home' %}" class="text-white hover:text-green-100 px-3 py-2 rounded-md text-sm font-medium transition">Home</a>
                         <a href="{% url 'tasks' %}" class="text-white hover:text-green-100 px-3 py-2 rounded-md text-sm font-medium transition">Tasks</a>
                         <a href="{% url 'store' %}" class="text-white hover:text-green-100 px-3 py-2 rounded-md text-sm font-medium transition">Store</a>
-                        {% if user.is_authenticated %}
-                            <a href="{% url 'orders' %}" class="text-white hover:text-green-100 px-3 py-2 rounded-md text-sm font-medium transition">My Orders</a>
-                            {% if user.is_staff %}
-                                <a href="{% url 'moderation_dashboard' %}" class="text-white hover:text-green-100 px-3 py-2 rounded-md text-sm font-medium transition">Moderation</a>
-                                <a href="{% url 'admin_dashboard' %}" class="text-white hover:text-green-100 px-3 py-2 rounded-md text-sm font-medium transition">Admin</a>
-                            {% endif %}
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <div class="flex items-center space-x-4">
-                    {% if user.is_authenticated %}
-                        <div class="flex items-center bg-white bg-opacity-20 rounded-full px-4 py-2">
-                            <span class="text-yellow-300 mr-2">🪙</span>
-                            <span class="text-white font-bold">{{ user.profile.coin_balance }}</span>
-                        </div>
                         <a href="{% url 'profile' %}" class="text-white hover:text-green-100 px-3 py-2 rounded-md text-sm font-medium transition">Profile</a>
-                        <a href="{% url 'logout' %}" class="bg-white text-green-600 hover:bg-green-50 px-4 py-2 rounded-md text-sm font-medium transition">Logout</a>
+                        
+                        <!-- Admin/Moderator Links -->
+                        {% if user.is_staff %}
+                            <a href="{% url 'moderation_dashboard' %}" class="text-yellow-300 hover:text-yellow-100 px-3 py-2 rounded-md text-sm font-bold transition">
+                                Moderate
+                            </a>
+                        {% endif %}
+                        {% if user.is_superuser %}
+                            <a href="{% url 'admin_dashboard' %}" class="text-yellow-300 hover:text-yellow-100 px-3 py-2 rounded-md text-sm font-bold transition">
+                                Admin
+                            </a>
+                        {% endif %}
+                        
+                        <!-- Coin Balance Badge -->
+                        <div class="bg-yellow-400 text-green-900 px-4 py-2 rounded-full font-bold flex items-center space-x-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9a1 1 0 112 0v4a1 1 0 11-2 0V9zm1-5a1 1 0 100 2 1 1 0 000-2z"/>
+                            </svg>
+                            <span>{{ user.profile.coin_balance|default:0 }}</span>
+                        </div>
+                        
+                        <a href="{% url 'logout' %}" class="text-white hover:text-red-200 px-3 py-2 rounded-md text-sm font-medium transition">Logout</a>
                     {% else %}
                         <a href="{% url 'login' %}" class="text-white hover:text-green-100 px-3 py-2 rounded-md text-sm font-medium transition">Login</a>
-                        <a href="{% url 'signup' %}" class="bg-white text-green-600 hover:bg-green-50 px-4 py-2 rounded-md text-sm font-medium transition">Sign Up</a>
+                        <a href="{% url 'signup' %}" class="bg-white text-green-700 hover:bg-green-50 px-4 py-2 rounded-full text-sm font-medium transition">Sign Up</a>
                     {% endif %}
                 </div>
+                
+                <!-- Mobile Hamburger -->
+                <div class="hamburger md:hidden" onclick="toggleMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            
+            <!-- Mobile Menu -->
+            <div class="mobile-menu md:hidden pb-4" id="mobileMenu">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'home' %}" class="block text-white hover:text-green-100 px-3 py-2 rounded-md text-base font-medium">Home</a>
+                    <a href="{% url 'tasks' %}" class="block text-white hover:text-green-100 px-3 py-2 rounded-md text-base font-medium">Tasks</a>
+                    <a href="{% url 'store' %}" class="block text-white hover:text-green-100 px-3 py-2 rounded-md text-base font-medium">Store</a>
+                    <a href="{% url 'profile' %}" class="block text-white hover:text-green-100 px-3 py-2 rounded-md text-base font-medium">Profile</a>
+                    
+                    <!-- Admin/Moderator Links for Mobile -->
+                    {% if user.is_staff %}
+                        <a href="{% url 'moderation_dashboard' %}" class="block text-yellow-300 hover:text-yellow-100 px-3 py-2 rounded-md text-base font-bold">
+                            Moderate
+                        </a>
+                    {% endif %}
+                    {% if user.is_superuser %}
+                        <a href="{% url 'admin_dashboard' %}" class="block text-yellow-300 hover:text-yellow-100 px-3 py-2 rounded-md text-base font-bold">
+                            Admin
+                        </a>
+                    {% endif %}
+                    
+                    <div class="bg-yellow-400 text-green-900 px-4 py-2 rounded-full font-bold inline-flex items-center space-x-2 my-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9a1 1 0 112 0v4a1 1 0 11-2 0V9zm1-5a1 1 0 100 2 1 1 0 000-2z"/>
+                        </svg>
+                        <span>{{ user.profile.coin_balance|default:0 }} Coins</span>
+                    </div>
+                    <a href="{% url 'logout' %}" class="block text-white hover:text-red-200 px-3 py-2 rounded-md text-base font-medium">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="block text-white hover:text-green-100 px-3 py-2 rounded-md text-base font-medium">Login</a>
+                    <a href="{% url 'signup' %}" class="block text-white hover:text-green-100 px-3 py-2 rounded-md text-base font-medium">Sign Up</a>
+                {% endif %}
             </div>
         </div>
     </nav>
-
-    <!-- Notifications Banner -->
-    {% if user.is_authenticated and unread_notifications %}
-        <div class="bg-blue-50 border-b border-blue-200">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-                <div class="flex items-start space-x-3">
-                    <span class="text-blue-500 text-xl">🔔</span>
-                    <div class="flex-1">
-                        <h4 class="text-sm font-semibold text-blue-900">You have {{ unread_notifications|length }} new notification(s)</h4>
-                        {% for notification in unread_notifications %}
-                            <div class="mt-2 text-sm text-blue-800">
-                                <a href="{% url 'mark_notification_read' notification.id %}" class="hover:underline">
-                                    {{ notification.message }}
-                                </a>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% endif %}
 
     <!-- Messages -->
     {% if messages %}
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
             {% for message in messages %}
-                <div class="{% if message.tags == 'error' %}bg-red-100 border-red-400 text-red-700{% elif message.tags == 'success' %}bg-green-100 border-green-400 text-green-700{% else %}bg-blue-100 border-blue-400 text-blue-700{% endif %} border px-4 py-3 rounded relative mb-4" role="alert">
+                <div class="bg-{% if message.tags == 'error' %}red{% elif message.tags == 'success' %}green{% else %}blue{% endif %}-100 border border-{% if message.tags == 'error' %}red{% elif message.tags == 'success' %}green{% else %}blue{% endif %}-400 text-{% if message.tags == 'error' %}red{% elif message.tags == 'success' %}green{% else %}blue{% endif %}-700 px-4 py-3 rounded relative mb-4" role="alert">
                     <span class="block sm:inline">{{ message }}</span>
                 </div>
             {% endfor %}
@@ -92,44 +255,22 @@
     {% endif %}
 
     <!-- Main Content -->
-    <main class="min-h-screen">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {% block content %}{% endblock %}
     </main>
 
     <!-- Footer -->
-    <footer class="gradient-green text-white mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h3 class="text-xl font-bold mb-4">🌱 EcoApp</h3>
-                    <p class="text-green-100">Making the world greener, one task at a time.</p>
-                </div>
-                <div>
-                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
-                    <ul class="space-y-2">
-                        <li><a href="{% url 'tasks' %}" class="text-green-100 hover:text-white transition">Browse Tasks</a></li>
-                        <li><a href="{% url 'store' %}" class="text-green-100 hover:text-white transition">Merchandise Store</a></li>
-                        <li><a href="{% url 'home' %}" class="text-green-100 hover:text-white transition">About Us</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-lg font-semibold mb-4">Contact</h4>
-                    <p class="text-green-100">Email: info@ecoapp.com</p>
-                    <p class="text-green-100">Join us in making a difference!</p>
-                </div>
-            </div>
-            <div class="border-t border-green-400 mt-8 pt-6 text-center text-green-100">
-                <p>&copy; 2025 EcoApp. All rights reserved.</p>
-            </div>
+    <footer class="gradient-primary text-white mt-16 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-white">&copy; 2025 EcoApp. Make a difference, earn rewards. 🌱</p>
         </div>
     </footer>
 
     <script>
-        AOS.init({
-            duration: 800,
-            easing: 'ease-in-out',
-            once: true
-        });
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('active');
+        }
     </script>
 </body>
 </html>

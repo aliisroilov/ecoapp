@@ -1,71 +1,70 @@
 {% extends 'eco/base.html' %}
-{% load custom_filters %}
-{% block title %}Merchandise Store - EcoApp{% endblock %}
+
+{% block title %}Store - EcoApp{% endblock %}
 
 {% block content %}
-<div class="gradient-green text-white py-16">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl font-bold mb-4" data-aos="fade-up">Merchandise Store 🛍️</h1>
-        <p class="text-xl text-green-100 mb-4" data-aos="fade-up" data-aos-delay="100">
-            Redeem your coins for awesome eco-friendly products!
-        </p>
-        {% if user.is_authenticated %}
-            <div class="inline-block bg-white bg-opacity-20 rounded-full px-8 py-3" data-aos="fade-up" data-aos-delay="200">
-                <span class="text-yellow-300 text-2xl mr-2">🪙</span>
-                <span class="text-2xl font-bold">{{ user_balance }} coins available</span>
+<div class="space-y-8">
+    <!-- Store Header with Balance -->
+    <div class="gradient-accent rounded-3xl p-8 md:p-12 shadow-2xl text-center">
+        <h1 class="text-3xl md:text-5xl font-bold text-white mb-4">Eco Store</h1>
+        <p class="text-lg md:text-xl text-white opacity-90 mb-6">Redeem your coins for amazing rewards!</p>
+        <div class="inline-flex items-center space-x-3 bg-white bg-opacity-20 backdrop-blur-sm rounded-full px-6 py-3">
+            <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/>
+            </svg>
+            <div class="text-left">
+                <p class="text-white text-sm opacity-90">Your Balance</p>
+                <p class="text-white text-2xl font-bold">{{ user.profile.coin_balance|default:0 }} Coins</p>
             </div>
-        {% endif %}
+        </div>
     </div>
-</div>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    {% if items %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <!-- Store Items Grid -->
+    <div>
+        <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">Available Items</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {% for item in items %}
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover-scale" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1|multiply:50 }}">
-                    <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-64 object-cover">
-                    
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold mb-2 text-gray-800">{{ item.name }}</h3>
-                        <p class="text-gray-600 mb-4">{{ item.description|truncatewords:20 }}</p>
-                        
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center space-x-2">
-                                <span class="text-yellow-500 text-2xl">🪙</span>
-                                <span class="text-2xl font-bold text-green-600">{{ item.coin_cost }}</span>
-                            </div>
-                            {% if item.stock_quantity > 0 %}
-                                <span class="text-sm text-green-600 font-semibold">✓ In Stock</span>
-                            {% else %}
-                                <span class="text-sm text-red-600 font-semibold">✗ Out of Stock</span>
-                            {% endif %}
+            <div class="card overflow-hidden fade-in">
+                {% if item.image %}
+                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-48 object-cover">
+                {% else %}
+                <div class="w-full h-48 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                    <svg class="w-20 h-20 text-white opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                </div>
+                {% endif %}
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">{{ item.name }}</h3>
+                    <p class="text-gray-600 mb-4">{{ item.description|truncatewords:15 }}</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-6 h-6 text-yellow-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/>
+                            </svg>
+                            <span class="text-xl font-bold text-gray-800">{{ item.price_coins }}</span>
                         </div>
-                        
-                        {% if user.is_authenticated %}
-                            {% if user_balance >= item.coin_cost and item.stock_quantity > 0 %}
-                                <a href="{% url 'redeem_item' item.id %}" class="block w-full text-center bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold transition">
-                                    Redeem Now
-                                </a>
-                            {% else %}
-                                <button class="w-full bg-gray-400 text-white py-2 rounded-lg font-semibold cursor-not-allowed">
-                                    {% if user_balance < item.coin_cost %}Insufficient Coins{% else %}Out of Stock{% endif %}
-                                </button>
-                            {% endif %}
+                        {% if user.profile.coin_balance >= item.price_coins %}
+                        <a href="{% url 'redeem_item' item.id %}" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full font-semibold transition">
+                            Redeem
+                        </a>
                         {% else %}
-                            <a href="{% url 'login' %}" class="block w-full text-center bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold transition">
-                                Login to Redeem
-                            </a>
+                        <span class="bg-gray-300 text-gray-600 px-6 py-2 rounded-full font-semibold cursor-not-allowed">
+                            Not Enough
+                        </span>
                         {% endif %}
                     </div>
                 </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-12">
+                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                <p class="text-gray-500 text-lg">No items available right now. Check back soon!</p>
+            </div>
             {% endfor %}
         </div>
-    {% else %}
-        <div class="text-center py-16">
-            <div class="text-6xl mb-4">🛍️</div>
-            <h3 class="text-2xl font-bold text-gray-700 mb-2">No items available yet</h3>
-            <p class="text-gray-600">Check back soon for awesome merchandise!</p>
-        </div>
-    {% endif %}
+    </div>
 </div>
 {% endblock %}

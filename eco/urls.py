@@ -18,6 +18,7 @@ urlpatterns = [
     path('tasks/', views.tasks_view, name='tasks'),
     path('tasks/<int:task_id>/', views.task_detail_view, name='task_detail'),
     path('tasks/<int:task_id>/submit/', views.submit_task_view, name='submit_task'),
+    path('my-submissions/', views.my_submissions, name='my_submissions'),  # NEW
     
     # Moderation
     path('moderation/', views.moderation_dashboard, name='moderation_dashboard'),
@@ -28,6 +29,10 @@ urlpatterns = [
     path('store/', views.store_view, name='store'),
     path('store/redeem/<int:item_id>/', views.redeem_item, name='redeem_item'),
     path('orders/', views.orders_view, name='orders'),
+    path('my-orders/', views.my_orders, name='my_orders'),  # NEW (alias)
+    
+    # Transactions
+    path('transactions/', views.transactions, name='transactions'),  # NEW
     
     # Notifications
     path('notifications/<int:notification_id>/read/', views.mark_notification_read, name='mark_notification_read'),

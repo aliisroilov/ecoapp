@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.db.models import Count, Q
 from django.utils import timezone
+from django.core.paginator import Paginator
 from .models import (
     UserProfile, EcoTask, TaskSubmission, 
     CoinTransaction, MerchItem, Order, Notification
@@ -20,7 +21,7 @@ def home(request):
     total_tasks = EcoTask.objects.filter(is_active=True).count()
     total_users = UserProfile.objects.count()
     total_submissions = TaskSubmission.objects.filter(status='approved').count()
-    featured_tasks = EcoTask.objects.filter(is_active=True)[:3]
+    featured_tasks = EcoTask.objects.filter(is_active=True).order_by('-coin_reward')[:3]
     
     # Get unread notifications for logged in users
     unread_notifications = []
@@ -29,6 +30,30 @@ def home(request):
             user=request.user, 
             is_read=False
         )[:5]
+        
+        # Additional stats for logged in users
+        completed_tasks = TaskSubmission.objects.filter(
+            user=request.user,
+            status='approved'
+        ).count()
+        
+        # Calculate rank
+        from django.contrib.auth.models import User
+        all_users = User.objects.annotate(
+            submission_count=Count('submissions', filter=Q(submissions__status='approved'))  # FIXED: tasksubmission -> submissions
+        ).order_by('-submission_count')
+        
+        rank = 1
+        for i, u in enumerate(all_users, 1):
+            if u.id == request.user.id:
+                rank = i
+                break
+        
+        impact_score = completed_tasks * 10
+    else:
+        completed_tasks = 0
+        rank = None
+        impact_score = 0
     
     context = {
         'total_tasks': total_tasks,
@@ -36,9 +61,11 @@ def home(request):
         'total_submissions': total_submissions,
         'featured_tasks': featured_tasks,
         'unread_notifications': unread_notifications,
+        'completed_tasks': completed_tasks,
+        'rank': rank,
+        'impact_score': impact_score,
     }
     return render(request, 'eco/home.html', context)
-
 
 def signup_view(request):
     """User registration"""
@@ -96,13 +123,35 @@ def profile_view(request):
     recent_transactions = CoinTransaction.objects.filter(user=request.user)[:10]
     recent_submissions = TaskSubmission.objects.filter(user=request.user)[:5]
     
+    # Calculate stats
+    completed_tasks = TaskSubmission.objects.filter(
+        user=request.user,
+        status='approved'
+    ).count()
+    
+    # Calculate rank
+    from django.contrib.auth.models import User
+    all_users = User.objects.annotate(
+        submission_count=Count('submissions', filter=Q(submissions__status='approved'))  # FIXED: tasksubmission -> submissions
+    ).order_by('-submission_count')
+    
+    rank = 1
+    for i, u in enumerate(all_users, 1):
+        if u.id == request.user.id:
+            rank = i
+            break
+    
+    impact_score = completed_tasks * 10
+    
     context = {
         'profile': profile,
         'recent_transactions': recent_transactions,
         'recent_submissions': recent_submissions,
+        'completed_tasks': completed_tasks,
+        'rank': rank,
+        'impact_score': impact_score,
     }
     return render(request, 'eco/profile.html', context)
-
 
 @login_required
 def edit_profile_view(request):
@@ -113,6 +162,13 @@ def edit_profile_view(request):
         form = UserProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
+            
+            # Also update User model fields
+            request.user.first_name = request.POST.get('first_name', '')
+            request.user.last_name = request.POST.get('last_name', '')
+            request.user.email = request.POST.get('email', '')
+            request.user.save()
+            
             messages.success(request, 'Your profile has been updated!')
             return redirect('profile')
     else:
@@ -122,8 +178,8 @@ def edit_profile_view(request):
 
 
 def tasks_view(request):
-    """List all eco tasks"""
-    tasks = EcoTask.objects.filter(is_active=True)
+    """List all eco tasks with filtering and pagination"""
+    tasks_list = EcoTask.objects.filter(is_active=True)
     
     # Check which tasks user has already submitted
     submitted_task_ids = []
@@ -131,6 +187,34 @@ def tasks_view(request):
         submitted_task_ids = TaskSubmission.objects.filter(
             user=request.user
         ).values_list('task_id', flat=True)
+    
+    # Search
+    search = request.GET.get('search')
+    if search:
+        tasks_list = tasks_list.filter(
+            Q(title__icontains=search) | Q(description__icontains=search)
+        )
+    
+    # Filter by difficulty
+    difficulty = request.GET.get('difficulty')
+    if difficulty:
+        tasks_list = tasks_list.filter(difficulty=difficulty)
+    
+    # Sort
+    sort = request.GET.get('sort')
+    if sort == 'reward':
+        tasks_list = tasks_list.order_by('-coin_reward')
+    elif sort == 'deadline':
+        tasks_list = tasks_list.order_by('deadline')
+    elif sort == 'title':
+        tasks_list = tasks_list.order_by('title')
+    else:
+        tasks_list = tasks_list.order_by('-created_at')
+    
+    # Pagination
+    paginator = Paginator(tasks_list, 9)  # 9 tasks per page
+    page = request.GET.get('page')
+    tasks = paginator.get_page(page)
     
     context = {
         'tasks': tasks,
@@ -181,7 +265,7 @@ def submit_task_view(request, task_id):
             submission.task = task
             submission.save()
             messages.success(request, 'Your submission has been sent for review!')
-            return redirect('task_detail', task_id=task_id)
+            return redirect('my_submissions')
     else:
         form = TaskSubmissionForm()
     
@@ -192,13 +276,30 @@ def submit_task_view(request, task_id):
     return render(request, 'eco/submit_task.html', context)
 
 
+# NEW VIEW: My Submissions
+@login_required
+def my_submissions(request):
+    """View user's task submissions"""
+    submissions = TaskSubmission.objects.filter(user=request.user).order_by('-created_at')
+    
+    # Filter by status
+    status = request.GET.get('status')
+    if status:
+        submissions = submissions.filter(status=status)
+    
+    context = {
+        'submissions': submissions,
+    }
+    return render(request, 'eco/my_submissions.html', context)
+
+
 @login_required
 @user_passes_test(is_moderator)
 def moderation_dashboard(request):
     """Moderation dashboard for staff"""
     status_filter = request.GET.get('status', 'pending')
     
-    submissions = TaskSubmission.objects.all()
+    submissions = TaskSubmission.objects.all().order_by('-created_at')
     if status_filter != 'all':
         submissions = submissions.filter(status=status_filter)
     
@@ -269,7 +370,7 @@ def reject_submission(request, submission_id):
 
 def store_view(request):
     """Merchandise store"""
-    items = MerchItem.objects.filter(available=True)
+    items = MerchItem.objects.filter(available=True).order_by('name')  # FIXED: removed is_popular
     
     user_balance = 0
     if request.user.is_authenticated:
@@ -290,11 +391,14 @@ def redeem_item(request, item_id):
     
     if request.method == 'POST':
         if profile.coin_balance >= item.coin_cost:
+            # Get shipping address
+            shipping_address = request.POST.get('shipping_address', '')
+            
             # Create order
             order = Order.objects.create(
                 user=request.user,
                 merch_item=item,
-                shipping_address=request.POST.get('shipping_address', '')
+                shipping_address=shipping_address
             )
             
             # Deduct coins
@@ -302,6 +406,13 @@ def redeem_item(request, item_id):
                 item.coin_cost,
                 f"Redeemed: {item.name}"
             )
+            
+            # Update stock
+            if hasattr(item, 'stock_quantity') and item.stock_quantity:
+                item.stock_quantity -= 1
+                if item.stock_quantity <= 0:
+                    item.available = False
+                item.save()
             
             # Create notification
             Notification.objects.create(
@@ -312,7 +423,7 @@ def redeem_item(request, item_id):
             )
             
             messages.success(request, f'Successfully redeemed {item.name}!')
-            return redirect('orders')
+            return redirect('my_orders')
         else:
             messages.error(request, 'Insufficient coins!')
             return redirect('store')
@@ -323,15 +434,39 @@ def redeem_item(request, item_id):
     return render(request, 'eco/redeem_item.html', context)
 
 
+# NEW VIEW: My Orders (alias for orders_view)
 @login_required
-def orders_view(request):
+def my_orders(request):
     """User's orders"""
-    orders = Order.objects.filter(user=request.user)
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
     
     context = {
         'orders': orders,
     }
-    return render(request, 'eco/orders.html', context)
+    return render(request, 'eco/my_orders.html', context)
+
+
+@login_required
+def orders_view(request):
+    """User's orders (same as my_orders)"""
+    return my_orders(request)
+
+
+# NEW VIEW: Transactions History
+@login_required
+def transactions(request):
+    """View user's coin transaction history"""
+    transactions_list = CoinTransaction.objects.filter(user=request.user).order_by('-created_at')
+    
+    # Pagination
+    paginator = Paginator(transactions_list, 20)  # 20 transactions per page
+    page = request.GET.get('page')
+    transactions_page = paginator.get_page(page)
+    
+    context = {
+        'transactions': transactions_page,
+    }
+    return render(request, 'eco/transactions.html', context)
 
 
 @login_required
@@ -350,14 +485,16 @@ def mark_notification_read(request, notification_id):
 @user_passes_test(is_moderator)
 def admin_dashboard(request):
     """Admin dashboard with statistics"""
+    from django.contrib.auth.models import User
+    
     # Top users by submissions
-    top_users = UserProfile.objects.annotate(
-        submission_count=Count('submissions', filter=Q(submissions__status='approved'))
+    top_users = User.objects.annotate(
+        submission_count=Count('submissions', filter=Q(submissions__status='approved'))  # FIXED
     ).order_by('-submission_count')[:5]
     
     # Most completed tasks
     top_tasks = EcoTask.objects.annotate(
-        completion_count=Count('submissions', filter=Q(submissions__status='approved'))
+        completion_count=Count('submissions', filter=Q(submissions__status='approved'))  # FIXED
     ).order_by('-completion_count')[:5]
     
     # Most redeemed items
@@ -366,7 +503,7 @@ def admin_dashboard(request):
     ).order_by('-order_count')[:5]
     
     # General stats
-    total_users = UserProfile.objects.count()
+    total_users = User.objects.count()
     total_tasks = EcoTask.objects.count()
     total_submissions = TaskSubmission.objects.count()
     pending_submissions = TaskSubmission.objects.filter(status='pending').count()
@@ -386,14 +523,13 @@ def admin_dashboard(request):
     }
     return render(request, 'eco/admin_dashboard.html', context)
 
-
 @login_required
 @user_passes_test(is_moderator)
 def manage_orders(request):
     """Manage all orders"""
     status_filter = request.GET.get('status', 'pending')
     
-    orders = Order.objects.all()
+    orders = Order.objects.all().order_by('-created_at')
     if status_filter != 'all':
         orders = orders.filter(status=status_filter)
     

@@ -1,112 +1,122 @@
 {% extends 'eco/base.html' %}
 
-{% block title %}My Profile - EcoApp{% endblock %}
+{% block title %}Profile - EcoApp{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Profile Card -->
-        <div class="lg:col-span-1">
-            <div class="bg-white rounded-2xl shadow-lg p-8 text-center" data-aos="fade-up">
-                {% if profile.photo %}
-                    <img src="{{ profile.photo.url }}" alt="{{ user.username }}" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover border-4 border-green-500">
-                {% else %}
-                    <div class="w-32 h-32 rounded-full mx-auto mb-4 bg-gradient-to-r from-green-400 to-green-600 flex items-center justify-center border-4 border-green-500">
-                        <span class="text-5xl text-white">{{ user.username.0|upper }}</span>
-                    </div>
-                {% endif %}
-                
-                <h2 class="text-2xl font-bold text-gray-900 mb-1">{{ user.get_full_name|default:user.username }}</h2>
-                <p class="text-gray-600 mb-4">@{{ user.username }}</p>
-                
-                {% if profile.location %}
-                    <p class="text-gray-600 mb-2">📍 {{ profile.location }}</p>
-                {% endif %}
-                {% if profile.age %}
-                    <p class="text-gray-600 mb-4">🎂 {{ profile.age }} years old</p>
-                {% endif %}
-                
-                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl p-6 mb-6">
-                    <p class="text-white text-sm mb-2">Coin Balance</p>
-                    <div class="flex items-center justify-center space-x-2">
-                        <span class="text-4xl">🪙</span>
-                        <span class="text-4xl font-bold text-white">{{ profile.coin_balance }}</span>
-                    </div>
-                </div>
-                
-                {% if profile.bio %}
-                    <div class="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-                        <p class="text-sm font-semibold text-gray-700 mb-2">About Me</p>
-                        <p class="text-gray-600">{{ profile.bio }}</p>
-                    </div>
-                {% endif %}
-                
-                <a href="{% url 'edit_profile' %}" class="block w-full gradient-green text-white py-3 rounded-lg font-semibold hover:opacity-90 transition">
-                    Edit Profile
-                </a>
+<div class="space-y-8">
+    <!-- Profile Header -->
+    <div class="gradient-primary rounded-3xl p-8 md:p-12 shadow-2xl">
+        <div class="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
+            <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg">
+                <svg class="w-12 h-12 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="text-center md:text-left flex-1">
+                <h1 class="text-3xl md:text-4xl font-bold text-white mb-2">{{ user.first_name }} {{ user.last_name }}</h1>
+                <p class="text-white opacity-90 text-lg">@{{ user.username }}</p>
+                <p class="text-white opacity-75 mt-2">{{ user.email }}</p>
             </div>
         </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <!-- Coin Balance -->
+        <div class="gradient-accent rounded-2xl p-6 shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+                <svg class="w-10 h-10 md:w-12 md:h-12 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"/>
+                </svg>
+            </div>
+            <p class="text-white text-sm opacity-90 mb-1">Total Coins</p>
+            <h3 class="text-3xl md:text-4xl font-bold text-white">{{ user.profile.coin_balance|default:0 }}</h3>
+        </div>
         
-        <!-- Activity Tabs -->
-        <div class="lg:col-span-2">
-            <!-- Recent Submissions -->
-            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8" data-aos="fade-up" data-aos-delay="100">
-                <h3 class="text-2xl font-bold mb-6 text-gray-900">Recent Submissions</h3>
-                {% if recent_submissions %}
-                    <div class="space-y-4">
-                        {% for submission in recent_submissions %}
-                            <div class="border-l-4 
-                                {% if submission.status == 'approved' %}border-green-500 bg-green-50
-                                {% elif submission.status == 'rejected' %}border-red-500 bg-red-50
-                                {% else %}border-yellow-500 bg-yellow-50{% endif %} 
-                                p-4 rounded-r-lg">
-                                <div class="flex justify-between items-start">
-                                    <div class="flex-1">
-                                        <h4 class="font-bold text-gray-900">{{ submission.task.title }}</h4>
-                                        <p class="text-sm text-gray-600 mt-1">{{ submission.created_at|date:"M d, Y" }}</p>
-                                    </div>
-                                    <span class="px-3 py-1 rounded-full text-sm font-semibold
-                                        {% if submission.status == 'approved' %}bg-green-200 text-green-800
-                                        {% elif submission.status == 'rejected' %}bg-red-200 text-red-800
-                                        {% else %}bg-yellow-200 text-yellow-800{% endif %}">
-                                        {{ submission.get_status_display }}
-                                    </span>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="text-gray-600 text-center py-8">No submissions yet. Start completing tasks!</p>
-                {% endif %}
+        <!-- Tasks Completed -->
+        <div class="gradient-primary rounded-2xl p-6 shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+                <svg class="w-10 h-10 md:w-12 md:h-12 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 3H14.82C14.4 1.84 13.3 1 12 1C10.7 1 9.6 1.84 9.18 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM12 3C12.55 3 13 3.45 13 4C13 4.55 12.55 5 12 5C11.45 5 11 4.55 11 4C11 3.45 11.45 3 12 3ZM10 17L6 13L7.41 11.59L10 14.17L16.59 7.58L18 9L10 17Z"/>
+                </svg>
             </div>
-            
-            <!-- Coin Transaction History -->
-            <div class="bg-white rounded-2xl shadow-lg p-8" data-aos="fade-up" data-aos-delay="200">
-                <h3 class="text-2xl font-bold mb-6 text-gray-900">Coin History</h3>
-                {% if recent_transactions %}
-                    <div class="space-y-3">
-                        {% for transaction in recent_transactions %}
-                            <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                                <div class="flex items-center space-x-3">
-                                    <span class="text-2xl">
-                                        {% if transaction.transaction_type == 'earn' %}💰{% else %}🛍️{% endif %}
-                                    </span>
-                                    <div>
-                                        <p class="font-semibold text-gray-900">{{ transaction.description }}</p>
-                                        <p class="text-sm text-gray-600">{{ transaction.created_at|date:"M d, Y - H:i" }}</p>
-                                    </div>
-                                </div>
-                                <span class="text-lg font-bold 
-                                    {% if transaction.transaction_type == 'earn' %}text-green-600{% else %}text-red-600{% endif %}">
-                                    {% if transaction.transaction_type == 'earn' %}+{% else %}-{% endif %}{{ transaction.amount }}
-                                </span>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="text-gray-600 text-center py-8">No transactions yet.</p>
-                {% endif %}
+            <p class="text-white text-sm opacity-90 mb-1">Completed</p>
+            <h3 class="text-3xl md:text-4xl font-bold text-white">{{ completed_tasks|default:0 }}</h3>
+        </div>
+        
+        <!-- Pending Tasks -->
+        <div class="gradient-blue rounded-2xl p-6 shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+                <svg class="w-10 h-10 md:w-12 md:h-12 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
             </div>
+            <p class="text-white text-sm opacity-90 mb-1">Pending</p>
+            <h3 class="text-3xl md:text-4xl font-bold text-white">{{ pending_tasks|default:0 }}</h3>
+        </div>
+        
+        <!-- Total Redemptions -->
+        <div class="gradient-orange rounded-2xl p-6 shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+                <svg class="w-10 h-10 md:w-12 md:h-12 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/>
+                </svg>
+            </div>
+            <p class="text-white text-sm opacity-90 mb-1">Redeemed</p>
+            <h3 class="text-3xl md:text-4xl font-bold text-white">{{ total_orders|default:0 }}</h3>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Submissions -->
+        <div class="card p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Recent Submissions</h2>
+            {% if recent_submissions %}
+                <div class="space-y-3">
+                    {% for submission in recent_submissions %}
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                            <p class="font-semibold text-gray-800">{{ submission.task.title }}</p>
+                            <p class="text-sm text-gray-600">{{ submission.submitted_at|date:"M d, Y" }}</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold
+                            {% if submission.status == 'approved' %}bg-green-100 text-green-800
+                            {% elif submission.status == 'rejected' %}bg-red-100 text-red-800
+                            {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                            {{ submission.status|title }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500 text-center py-8">No submissions yet. Start completing tasks!</p>
+            {% endif %}
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="card p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Recent Orders</h2>
+            {% if recent_orders %}
+                <div class="space-y-3">
+                    {% for order in recent_orders %}
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                            <p class="font-semibold text-gray-800">{{ order.item.name }}</p>
+                            <p class="text-sm text-gray-600">{{ order.ordered_at|date:"M d, Y" }}</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold
+                            {% if order.status == 'delivered' %}bg-green-100 text-green-800
+                            {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
+                            {% else %}bg-blue-100 text-blue-800{% endif %}">
+                            {{ order.status|title }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500 text-center py-8">No orders yet. Visit the store to redeem items!</p>
+            {% endif %}
         </div>
     </div>
 </div>
