@@ -24,7 +24,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'replace-in-prod')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', '') == '1'
-ALLOWED_HOSTS = ['ecotrack.uz', 'www.ecotrack.uz']
+ALLOWED_HOSTS = ['ecotrack.uz', 'www.ecotrack.uz', '217.76.51.229']
 
 
 # Application definition
