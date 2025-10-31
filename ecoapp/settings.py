@@ -76,8 +76,12 @@ WSGI_APPLICATION = 'ecoapp.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_DB', 'ecoapp_db'),
+        'USER': os.environ.get('POSTGRES_USER', 'ecoapp_user'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', '0270'),
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
 
@@ -116,13 +120,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = '/static/'                 # add leading slash
-STATIC_ROOT = BASE_DIR / "staticfiles"
-
-# Add this so Django also looks in <project_root>/static/ during development
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+STATIC_ROOT = '/var/www/ecoapp/static/'
+MEDIA_ROOT = '/var/www/ecoapp/media/'
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
